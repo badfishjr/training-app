@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#17211c" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Training" />
+    <title>Six Day Training</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icon-180.png" />
+    <link rel="stylesheet" href="styles.css?v=5" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow" id="phaseLabel">Baseline</p>
+          <h1>Six Day Training</h1>
+        </div>
+        <button class="icon-button" id="settingsButton" aria-label="Open settings" title="Settings">
+          <span aria-hidden="true">...</span>
+        </button>
+      </header>
+
+      <main>
+        <section class="today-band">
+          <div>
+            <p class="muted" id="todayDate"></p>
+            <h2 id="todayTitle">Today</h2>
+            <p id="todayFocus" class="focus-line"></p>
+          </div>
+          <div class="session-meter" aria-label="Session length">
+            <span id="sessionMinutes">25</span>
+            <small>min</small>
+          </div>
+        </section>
+
+        <section class="tabs" aria-label="Views">
+          <button class="tab is-active" data-view="today">Today</button>
+          <button class="tab" data-view="week">Week</button>
+          <button class="tab" data-view="progress">Progress</button>
+        </section>
+
+        <section id="todayView" class="view is-active">
+          <div class="safety-panel">
+            <div>
+              <p class="eyebrow">Neck check</p>
+              <p id="neckGuidance">Keep your neck neutral and stop if symptoms increase.</p>
+            </div>
+            <div class="neck-inputs">
+              <label>Before <input id="neckBeforeInput" type="number" min="0" max="10" inputmode="numeric" placeholder="0-10"></label>
+              <label>After <input id="neckAfterInput" type="number" min="0" max="10" inputmode="numeric" placeholder="0-10"></label>
+            </div>
+            <label>Wrist/hand numbness now <input id="numbnessInput" type="number" min="0" max="10" inputmode="numeric" placeholder="0-10"></label>
+            <label class="toggle-line symptom-line">
+              <input id="neckSymptomsInput" type="checkbox" />
+              Symptoms changed during training
+            </label>
+            <label class="toggle-line symptom-line">
+              <input id="morningNumbnessInput" type="checkbox" />
+              Woke up with numbness
+            </label>
+            <label class="toggle-line symptom-line">
+              <input id="upperBodyRiskInput" type="checkbox" />
+              Upper body feels risky today
+            </label>
+          </div>
+          <div id="exerciseList" class="exercise-list"></div>
+          <button id="saveSession" class="primary-button">Save session</button>
+        </section>
+
+        <section id="weekView" class="view">
+          <div class="section-head">
+            <h2>This week</h2>
+            <p class="muted">Primary muscles are scheduled once per week.</p>
+          </div>
+          <div id="weekGrid" class="week-grid"></div>
+        </section>
+
+        <section id="progressView" class="view">
+          <div class="section-head">
+            <h2>Progression</h2>
+            <p class="muted" id="progressSummary"></p>
+          </div>
+          <div class="progress-stack">
+            <div class="panel">
+              <h3>Current rule</h3>
+              <p id="progressRule"></p>
+            </div>
+            <div class="panel">
+              <h3>Recent sessions</h3>
+              <div id="historyList" class="history-list"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="settingsDialog">
+      <form method="dialog" class="settings-form">
+        <div class="dialog-head">
+          <div>
+            <p class="eyebrow">Profile</p>
+            <h2>Training setup</h2>
+          </div>
+          <button class="icon-button" value="close" aria-label="Close settings" title="Close">x</button>
+        </div>
+
+        <label>
+          Age
+          <input id="ageInput" type="number" min="13" max="100" inputmode="numeric" />
+        </label>
+
+        <label>
+          Preferred load jump
+          <select id="loadJumpInput">
+            <option value="2.5">2.5 lb</option>
+            <option value="5">5 lb</option>
+            <option value="10">10 lb</option>
+          </select>
+        </label>
+
+        <label>
+          Week starts on
+          <select id="weekStartInput">
+            <option value="1">Monday</option>
+            <option value="0">Sunday</option>
+          </select>
+        </label>
+
+        <label class="toggle-line">
+          <input id="useTodayInput" type="checkbox" />
+          Follow the calendar day
+        </label>
+
+        <label class="toggle-line">
+          <input id="neckSensitiveInput" type="checkbox" />
+          Neck-protection mode
+        </label>
+
+        <label>
+          Project notes
+          <textarea id="projectNotesInput" rows="5" placeholder="Paste your ChatGPT fitness project notes here."></textarea>
+        </label>
+
+        <div class="dialog-actions">
+          <button id="resetDemo" type="button" class="ghost-button">Clear logs</button>
+          <button id="saveSettings" class="primary-button" value="default">Done</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js?v=5"></script>
+  </body>
+</html>
