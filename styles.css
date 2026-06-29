@@ -366,6 +366,16 @@ dialog::backdrop {
   margin-top: 4px;
 }
 
+.backup-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.backup-actions .ghost-button {
+  color: var(--ink);
+}
+
 .dialog-actions .primary-button {
   width: auto;
   min-width: 118px;

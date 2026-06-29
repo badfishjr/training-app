@@ -180,6 +180,9 @@ function cacheElements() {
     "saveSettings",
     "saveSession",
     "resetDemo",
+    "exportBackup",
+    "importBackup",
+    "backupFileInput",
     "toast"
   ].forEach((id) => {
     els[id] = document.getElementById(id);
@@ -195,6 +198,9 @@ function bindEvents() {
   els.saveSettings.addEventListener("click", saveSettings);
   els.saveSession.addEventListener("click", saveSession);
   els.resetDemo.addEventListener("click", clearLogs);
+  els.exportBackup.addEventListener("click", exportBackup);
+  els.importBackup.addEventListener("click", () => els.backupFileInput.click());
+  els.backupFileInput.addEventListener("change", importBackup);
   [els.numbnessInput, els.morningNumbnessInput, els.upperBodyRiskInput].forEach((input) => {
     input.addEventListener("input", render);
     input.addEventListener("change", render);
@@ -563,6 +569,57 @@ function clearLogs() {
   saveState();
   render();
   showToast("Logs cleared.");
+}
+
+function exportBackup() {
+  const payload = {
+    app: "six-day-training",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    state
+  };
+  const date = new Date().toISOString().slice(0, 10);
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `training-backup-${date}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showToast("Backup exported.");
+}
+
+function importBackup(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(String(reader.result || "{}"));
+      const importedState = parsed.state || parsed;
+      if (!Array.isArray(importedState.logs) || typeof importedState.settings !== "object") {
+        throw new Error("Invalid backup");
+      }
+      const defaults = defaultState();
+      state.settings = {
+        ...defaults.settings,
+        ...importedState.settings
+      };
+      state.logs = importedState.logs;
+      saveState();
+      render();
+      showToast("Backup imported.");
+    } catch {
+      showToast("That backup file did not work.");
+    } finally {
+      event.target.value = "";
+    }
+  };
+  reader.readAsText(file);
 }
 
 function clearDailySymptomInputs() {

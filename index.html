@@ -10,7 +10,7 @@
     <title>Six Day Training</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="icon-180.png" />
-    <link rel="stylesheet" href="styles.css?v=7" />
+    <link rel="stylesheet" href="styles.css?v=8" />
   </head>
   <body>
     <div class="app-shell">
@@ -144,6 +144,12 @@
           <textarea id="projectNotesInput" rows="5" placeholder="Paste your ChatGPT fitness project notes here."></textarea>
         </label>
 
+        <div class="backup-actions">
+          <button id="exportBackup" type="button" class="ghost-button">Export backup</button>
+          <button id="importBackup" type="button" class="ghost-button">Import backup</button>
+          <input id="backupFileInput" type="file" accept="application/json,.json" hidden />
+        </div>
+
         <div class="dialog-actions">
           <button id="resetDemo" type="button" class="ghost-button">Clear logs</button>
           <button id="saveSettings" class="primary-button" value="default">Done</button>
@@ -153,6 +159,6 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=8"></script>
   </body>
 </html>
