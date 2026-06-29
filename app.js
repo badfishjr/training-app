@@ -2,18 +2,18 @@ const STORAGE_KEY = "six-day-training-v1";
 
 const plan = [
   {
-    name: "Quads and Calves",
-    focus: "Bodyweight squat work, split squats, calves",
+    name: "Monday: Squat and Press",
+    focus: "Bodyweight squats, one-arm kettlebell press, split squats",
     minutes: 20,
-    upperBody: false,
+    upperBody: true,
     exercises: [
-      exercise("Air squat", "Quads", ["quadriceps"], 3, 15, 20, "Controlled reps, eyes level", "low"),
-      exercise("Split squat", "Quads", ["vastus medialis"], 2, 8, 10, "Each side, stay tall", "low"),
-      exercise("Standing calf raise", "Calves", ["gastrocnemius"], 2, 15, 25, "Pause at top, relaxed jaw", "low")
+      exercise("Bodyweight squat", "Quads", ["quadriceps"], 3, 15, 20, "Today baseline: 20, 20, 20", "low", [20, 20, 20]),
+      exercise("One-arm kettlebell overhead press", "Shoulders", ["deltoids"], 3, 8, 12, "30 lb today: 12, 10, 8. Only progress if next morning is fine.", "watch", [12, 10, 8], 30),
+      exercise("Split squat", "Quads", ["vastus medialis"], 2, 8, 10, "Today baseline: 10, 10. Use the third field only if you add a set later.", "low", [10, 10, ""])
     ]
   },
   {
-    name: "Cautious Push",
+    name: "Tuesday: Cautious Push",
     focus: "Chest and triceps without neck or wrist drama",
     minutes: 20,
     upperBody: true,
@@ -30,7 +30,7 @@ const plan = [
     ]
   },
   {
-    name: "Glutes and Hamstrings",
+    name: "Wednesday: Glutes and Hamstrings",
     focus: "Glute bridges, lunges, easy hinge pattern",
     minutes: 20,
     upperBody: false,
@@ -42,7 +42,7 @@ const plan = [
     ]
   },
   {
-    name: "Cautious Pull",
+    name: "Thursday: Cautious Pull",
     focus: "Rows and scapular control without shrugging",
     minutes: 20,
     upperBody: true,
@@ -59,15 +59,15 @@ const plan = [
     ]
   },
   {
-    name: "Shoulders and Arms",
-    focus: "Cautious overhead reintroduction, curls, control",
+    name: "Friday: Arms and Shoulder Control",
+    focus: "Curls, lateral raises, wrist-neutral control",
     minutes: 20,
     upperBody: true,
     exercises: [
-      exercise("Light one-arm kettlebell overhead press", "Shoulders", ["deltoids"], 2, 5, 8, "Only if symptoms are quiet; no grinding", "watch"),
       exercise("Light curl", "Biceps", ["biceps"], 2, 10, 15, "No swinging, shoulders quiet", "low"),
       exercise("Lateral raise", "Side delts", ["lateral deltoid"], 2, 10, 15, "Light, no shrugging", "moderate"),
-      exercise("Wrist neutral mobility", "Nerve-friendly reset", ["wrist"], 1, 6, 10, "Gentle only; stop if tingling increases", "low")
+      exercise("Wrist neutral mobility", "Nerve-friendly reset", ["wrist"], 1, 6, 10, "Gentle only; stop if tingling increases", "low"),
+      exercise("Easy walk or breathing reset", "Recovery", ["cardio"], 1, 5, 8, "Use remaining minutes; relaxed shoulders", "low")
     ],
     fallbackExercises: [
       exercise("Bird dog legs-only", "Core stability", ["erectors"], 3, 8, 12, "Use this if overhead work feels questionable", "low"),
@@ -76,7 +76,7 @@ const plan = [
     ]
   },
   {
-    name: "Core and Conditioning",
+    name: "Saturday: Core and Conditioning",
     focus: "Bird dogs, cautious dead bugs, easy walking",
     minutes: 20,
     upperBody: false,
@@ -86,11 +86,19 @@ const plan = [
       exercise("Modified side plank", "Obliques", ["obliques"], 2, 15, 30, "Stop if the neck starts helping", "moderate"),
       exercise("Easy walk", "Conditioning", ["cardio"], 1, 8, 12, "Minutes, relaxed shoulders", "low")
     ]
+  },
+  {
+    name: "Sunday: Rest",
+    focus: "Rest day. Walk if you want, but no logged strength work.",
+    minutes: 0,
+    rest: true,
+    upperBody: false,
+    exercises: []
   }
 ];
 
-function exercise(name, target, muscles, sets, minReps, maxReps, note, neckLoad = "low") {
-  return { id: slug(name), name, target, muscles, sets, minReps, maxReps, note, neckLoad };
+function exercise(name, target, muscles, sets, minReps, maxReps, note, neckLoad = "low", defaultReps = [], defaultWeight = "") {
+  return { id: slug(name), name, target, muscles, sets, minReps, maxReps, note, neckLoad, defaultReps, defaultWeight };
 }
 
 function slug(value) {
@@ -220,10 +228,7 @@ function getTrainingDayIndex(date) {
     return state.logs.length % plan.length;
   }
 
-  const jsDay = date.getDay();
-  const weekStart = Number(state.settings.weekStart);
-  const offset = (jsDay - weekStart + 7) % 7;
-  return Math.min(offset, 5);
+  return (date.getDay() + 6) % 7;
 }
 
 function getPhase() {
@@ -276,6 +281,18 @@ function getAgeRule(ageMod) {
 function renderExercises(day, phase) {
   els.exerciseList.innerHTML = "";
   const activeDay = getActiveDay(day);
+  els.saveSession.disabled = Boolean(activeDay.rest);
+  els.saveSession.textContent = activeDay.rest ? "Rest day" : "Save session";
+  if (activeDay.rest) {
+    els.exerciseList.innerHTML = `
+      <article class="exercise-card">
+        <h3>Rest</h3>
+        <p class="meta">No strength work today. Easy walking is fine if it helps you feel better.</p>
+        <p class="hint">If the next morning is worse, yesterday was too aggressive.</p>
+      </article>
+    `;
+    return;
+  }
   activeDay.exercises.forEach((item) => {
     const suggestion = getSuggestion(item, phase);
     const neckTag = getNeckTag(item);
@@ -293,10 +310,11 @@ function renderExercises(day, phase) {
         </div>
         <span class="tag">${item.sets} x ${item.minReps}-${item.maxReps}</span>
       </div>
-      <div class="inputs">
-        <label>Sets <input data-field="sets" type="number" min="0" inputmode="numeric" value="${item.sets}"></label>
-        <label>Reps <input data-field="reps" type="number" min="0" inputmode="numeric" placeholder="${item.minReps}-${item.maxReps}"></label>
-        <label>Weight <input data-field="weight" type="number" min="0" step="0.5" inputmode="decimal" placeholder="lb"></label>
+      <div class="inputs set-inputs">
+        <label>Set 1 <input data-field="rep1" type="number" min="0" inputmode="numeric" value="${item.defaultReps[0] ?? ""}" placeholder="${item.minReps}-${item.maxReps}"></label>
+        <label>Set 2 <input data-field="rep2" type="number" min="0" inputmode="numeric" value="${item.defaultReps[1] ?? ""}" placeholder="${item.minReps}-${item.maxReps}"></label>
+        <label>Set 3 <input data-field="rep3" type="number" min="0" inputmode="numeric" value="${item.defaultReps[2] ?? ""}" placeholder="optional"></label>
+        <label>Weight <input data-field="weight" type="number" min="0" step="0.5" inputmode="decimal" value="${item.defaultWeight}" placeholder="lb"></label>
       </div>
     `;
     els.exerciseList.appendChild(card);
@@ -314,8 +332,10 @@ function getSuggestion(item, phase) {
 
   const last = recent[0];
   const loadJump = Number(state.settings.loadJump);
-  const hitTop = last.reps >= item.maxReps && last.sets >= item.sets;
-  const hitRange = last.reps >= item.minReps && last.sets >= item.sets;
+  const lastReps = getEntryReps(last);
+  const lowestRep = lastReps.length ? Math.min(...lastReps) : 0;
+  const hitTop = lowestRep >= item.maxReps && last.sets >= item.sets;
+  const hitRange = lowestRep >= item.minReps && last.sets >= item.sets;
 
   if (phase.kind === "deload") {
     const weight = last.weight ? Math.max(0, roundToHalf(last.weight * 0.8)) : "";
@@ -326,7 +346,7 @@ function getSuggestion(item, phase) {
     return `Today: try ${roundToHalf(last.weight + loadJump)} lb for ${item.minReps} reps.`;
   }
   if (hitRange) {
-    return `Today: try to add 1 rep, aiming for ${Math.min(last.reps + 1, item.maxReps)}.`;
+    return `Today: try to add 1 rep to your lowest set, up to ${item.maxReps}.`;
   }
   return "Today: repeat the last target and make it cleaner.";
 }
@@ -400,7 +420,7 @@ function renderWeek(todayIndex) {
       <ul class="day-list">
         ${day.exercises
           .map((item) => `<li><span>${item.name}</span><span class="muted">${item.target}</span></li>`)
-          .join("")}
+          .join("") || `<li><span>Rest</span><span class="muted">Sunday</span></li>`}
       </ul>
     `;
     els.weekGrid.appendChild(card);
@@ -420,7 +440,7 @@ function renderProgress(phase) {
   state.logs.slice(-8).reverse().forEach((log) => {
     const row = document.createElement("div");
     row.className = "history-row";
-    const totalSets = log.entries.reduce((sum, entry) => sum + (Number(entry.sets) || 0), 0);
+    const totalSets = log.entries.reduce((sum, entry) => sum + getEntryReps(entry).length, 0);
     const symptomNote = log.symptoms?.flagged || log.neck?.flagged ? "Symptom flag" : "Clean";
     row.innerHTML = `
       <div>
@@ -479,13 +499,19 @@ function saveSession() {
   const dayIndex = getTrainingDayIndex(new Date());
   const day = plan[dayIndex];
   const activeDay = getActiveDay(day);
+  if (activeDay.rest) {
+    showToast("Sunday is your rest day.");
+    return;
+  }
   const entries = [...els.exerciseList.querySelectorAll(".exercise-card")].map((card) => {
     const exerciseId = card.dataset.exerciseId;
     const input = (field) => Number(card.querySelector(`[data-field="${field}"]`).value) || 0;
+    const repsBySet = [input("rep1"), input("rep2"), input("rep3")].filter((value) => value > 0);
     return {
       exerciseId,
-      sets: input("sets"),
-      reps: input("reps"),
+      sets: repsBySet.length,
+      repsBySet,
+      reps: repsBySet.length ? Math.min(...repsBySet) : 0,
       weight: input("weight")
     };
   });
@@ -560,6 +586,13 @@ function showToast(message) {
 
 function roundToHalf(value) {
   return Math.round(value * 2) / 2;
+}
+
+function getEntryReps(entry) {
+  if (Array.isArray(entry.repsBySet)) {
+    return entry.repsBySet.filter((value) => Number(value) > 0).map(Number);
+  }
+  return Number(entry.reps) > 0 ? [Number(entry.reps)] : [];
 }
 
 function registerServiceWorker() {

@@ -239,6 +239,10 @@ h3 {
   margin-top: 12px;
 }
 
+.set-inputs {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .inputs label,
 .settings-form label,
 .safety-panel label {
@@ -393,5 +397,9 @@ dialog::backdrop {
 @media (min-width: 680px) {
   .week-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .set-inputs {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
